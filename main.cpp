@@ -257,12 +257,13 @@ int main()
         bool isMoving = slGetKey(SL_KEY_LEFT) || slGetKey(SL_KEY_RIGHT);
         bool isJumpKey = slGetKey(SL_KEY_UP);
 
-        if (isJumpKey && !player.isJumping)
+        if (isJumpKey && !player.isJumping && player.posY == 180)
         {
-            // Player starts jumping
+            //  jumping only when on the ground
             player.isJumping = true;
-            player.velocityY = 5.0;  
+            player.velocityY = 10.0;
         }
+
         if (slGetKey(' '))
         {
             isAttacking = true;
@@ -308,6 +309,11 @@ int main()
                 {
                     isAttacking = false;
                     attackFrame = 0;
+                }if (!player.isJumping && isJumpKey && player.posY == grnd.posY)
+                {
+                    // Player starts jumping
+                    player.isJumping = true;
+                    player.velocityY = 5.0;
                 }
             }
             else
@@ -323,6 +329,7 @@ int main()
             if (slGetKey(SL_KEY_LEFT))
             {
                 player.posX -= 7;
+               
                 
             }
             else if (slGetKey(SL_KEY_RIGHT))

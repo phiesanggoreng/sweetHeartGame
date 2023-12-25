@@ -139,7 +139,20 @@ int main()
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack\\rightattack\\attack6.png"),
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack\\rightattack\\attack7.png")
     };
-
+    vector<int> attack2kanan = {
+       slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\attack0.png"),
+       slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\attack1.png"),
+       slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\attack2.png"),
+       slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\attack3.png"),
+       
+    };
+    vector<int> attack2kiri = {
+       slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\right\\attack0.png"),
+       slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\right\\attack1.png"),
+       slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\right\\attack2.png"),
+       slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\right\\attack3.png"),
+       
+    };
     
 
     //Lompat Kanan
@@ -211,6 +224,7 @@ int main()
     int jumpFrame = 0;
     //attack
     bool isAttacking = false;
+    bool isAttacking2 = false;
     int attackFrame = 0;
     double attackAnimationDelay = 0.01;
     double attackAnimationTimer = 0.0;
@@ -255,7 +269,7 @@ int main()
         player.posY = max(player.posY, 180);
 
         bool isMoving = slGetKey(SL_KEY_LEFT) || slGetKey(SL_KEY_RIGHT);
-        bool isJumpKey = slGetKey(SL_KEY_UP);
+        bool isJumpKey = slGetKey(' ');
 
         if (isJumpKey && !player.isJumping && player.posY == 180)
         {
@@ -264,11 +278,17 @@ int main()
             player.velocityY = 10.0;
         }
 
-        if (slGetKey(' '))
+        if (slGetKey('Q'))
         {
             isAttacking = true;
             attackAnimationTimer = attackAnimationDelay; 
+        }else if (slGetKey('W'))
+        {
+            isAttacking2 = true;
+            attackAnimationTimer = attackAnimationDelay;
+
         }
+
         
        
        
@@ -319,6 +339,27 @@ int main()
             else
             {
   
+                attackAnimationTimer -= slGetDeltaTime();
+            }
+        }
+        else if (isAttacking2) {
+            const vector<int>& attack2Textures = (slGetKey(SL_KEY_LEFT)) ? attack2kiri : attack2kanan;
+
+            slSprite(attack2Textures[attackFrame], player.posX, player.posY, 165, 195);
+
+            if (attackAnimationTimer <= 0)
+            {
+                // Update attack animation frame
+                attackFrame += 1;
+                attackAnimationTimer = attackAnimationDelay * slGetDeltaTime();
+                if (attackFrame >= attack2Textures.size())
+                {
+                    isAttacking2 = false;
+                    attackFrame = 0;
+                }
+            }
+            else
+            {
                 attackAnimationTimer -= slGetDeltaTime();
             }
         }

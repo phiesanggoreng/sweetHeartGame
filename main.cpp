@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <vector>
 #include <random>
+#include <string>
 
 using namespace std;
 
@@ -48,6 +49,16 @@ void backGroundSound()
     slSoundLoop(bgm);
 };
 
+enum class SlimeState
+{
+    Moving,
+    Attacking,
+    
+};
+
+SlimeState slimeState = SlimeState::Moving;
+
+
 
 
 int main()
@@ -59,7 +70,7 @@ int main()
     int jump = slLoadWAV("D:\\sweetheart\\asset\\bgm\\jump2.wav");
 
     // untuk memunculkan secara random
-   random_device rd;
+    random_device rd;
 
     //font 
     int fontkecil = slLoadFont("D:\\sweetheart\\asset\\font\\sweetheart123.ttf");
@@ -158,7 +169,7 @@ int main()
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\attack1.png"),
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\attack2.png"),
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\attack3.png"),
-       
+
     };
     //menyerang jurus kedua kiri
     vector<int> attack2kiri = {
@@ -166,7 +177,7 @@ int main()
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\right\\attack1.png"),
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\right\\attack2.png"),
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\right\\attack3.png"),
-       
+
     };
     //Lompat Kanan
     vector<int> jumpkanan = {
@@ -226,7 +237,7 @@ int main()
        slLoadTexture("D:\\sweetheart\\asset\\enemy\\attack\\slime-attack-3.png"),
        slLoadTexture("D:\\sweetheart\\asset\\enemy\\attack\\slime-attack-4.png"),
     };
- 
+
 
 
     Cloud awan;
@@ -267,8 +278,8 @@ int main()
 
     for (int i = 0; i < numSlimes; i++)
     {
-        double x = 1500 + i * 200; 
-        double y = 200 + static_cast<double>(rd() % 3); 
+        double x = 1500 + i * 200;
+        double y = 200 + static_cast<double>(rd() % 3);
         slimes.push_back({ x, y });
     }
 
@@ -290,9 +301,16 @@ int main()
     double attackAnimationDelay = 0.01;
     double attackAnimationTimer = 0.0;
 
-   //slime
+    //slime
     int slimeCurrentFrame = 0;
     double slimeAnimationDelay = 0.2;
+    double slimeAttackTimer = 4.0;
+    //deadslime
+    int slimeDeathFrame = 0;
+    double slimeDeathAnimationDelay = 0.2;
+    double slimeDeathAnimationTimer = 0.0;
+
+
 
     while (!slShouldClose())
     {
@@ -344,12 +362,47 @@ int main()
         if (slGetKey('Q'))
         {
             isAttacking = true;
-            attackAnimationTimer = attackAnimationDelay; 
-        }else if (slGetKey('W'))
+            attackAnimationTimer = attackAnimationDelay;
+        }
+        else if (slGetKey('W'))
         {
             isAttacking2 = true;
             attackAnimationTimer = attackAnimationDelay;
 
+        }
+
+        if (isAttacking || isAttacking2)
+        {
+            // Assuming slime size is 83x98 pixels
+            double playerAttackX = player.posX + (slGetKey(SL_KEY_LEFT) ? -50 : 50);
+            double playerAttackY = player.posY;
+           
+
+            for (Slime& s : slimes)
+            {
+                // Check for collision between player's attack and slime
+                if (playerAttackX < s.posX + 83 && playerAttackX + 50> s.posX &&
+                    playerAttackY < s.posY + 98 && playerAttackY + 50> s.posY)
+                {
+                    
+                    s.posX = -1000; 
+                    s.posY = -1000;
+                    slSetForeColor(1, 1, 1, 1);
+                    slSprite(deadslime[slimeDeathFrame], slime.posX, slime.posY, 83, 98);
+
+                    // Update slime death animation frame and timer
+                    slimeDeathAnimationTimer -= slGetDeltaTime();
+                    if (slimeDeathAnimationTimer <= 0)
+                    {
+                        slimeDeathFrame = (slimeDeathFrame + 1) % deadslime.size();
+                        slimeDeathAnimationTimer = slimeDeathAnimationDelay;
+                    }
+
+                  
+                }
+               
+       
+            }
         }
 
         if (player.isJumping)
@@ -373,7 +426,7 @@ int main()
 
 
         }
-       
+
         else if (isMoving)
         {
             // Player is moving
@@ -404,8 +457,8 @@ int main()
             }
 
         }
-       
-        
+
+
         else if (isAttacking)
         {
             const vector<int>& attackTextures = (slGetKey(SL_KEY_LEFT)) ? attackkiri : attackkanan;
@@ -430,7 +483,7 @@ int main()
             }
             else
             {
-  
+
                 attackAnimationTimer -= slGetDeltaTime();
             }
         }
@@ -456,8 +509,8 @@ int main()
             }
         }
 
-        
-        
+
+
         else
         {
             // Player is idle
@@ -468,7 +521,7 @@ int main()
 
             // Update idle animation frame dengan delay
             idleAnimationDelay -= slGetDeltaTime();
-            if (idleAnimationDelay <= 0) 
+            if (idleAnimationDelay <= 0)
             {
                 currentIdleFrame = (currentIdleFrame + 1) % idlePlayerTextures.size();
                 idleAnimationDelay = 0.1; //  delay
@@ -492,32 +545,86 @@ int main()
             slSetForeColor(1, 1, 1, 0.2);
             slSprite(imgAll[2], c.posX, c.posY, 860, 484);
         }
+
+
+        slimeAttackTimer -= slGetDeltaTime();
+
+        // Check if the slime should attack
+        if (slimeAttackTimer <= 0)
+        {
+            // Slime is attacking
+            slimeState = SlimeState::Attacking;
+            slimeAttackTimer = 1; // Reset the timer for the next attack
+        }
+
         for (Slime& s : slimes)
         {
-            s.posX -= 2;
-            if (s.posX <= -100)
+            if (slimeState == SlimeState::Moving)
+            {
+     
+                s.posX -= 2;
+                if (s.posX <= -100)
+                {
+                    s.posX = 1800;
+                    s.posY = 190 + static_cast<double>(rd() % 3);
+                }
+
+     
+                if (s.posX > player.posX - 50 && s.posX < player.posX + 100)
+                {
+                 
+                    slSetForeColor(1, 1, 1, 1);
+                    slSprite(idleslime[slimeCurrentFrame], s.posX, s.posY, 83, 98);
+
+                 
+                    if (s.posX + 41 > player.posX - 50 && s.posX + 41 < player.posX + 150)
+                    {
+                        s.posX += 2;  
+                    }
+                }
+                else
+                {
+                    // Animate walking slime
+                    slSetForeColor(1, 1, 1, 1);
+                    slSprite(walkslime[slimeCurrentFrame], s.posX, s.posY, 83, 98);
+                }
+            }
+            else if (slimeState == SlimeState::Attacking)
             {
                 
-                s.posX = 1800;
-                s.posY = 190 + static_cast<double>(rd() % 3);
+                if (s.posX > player.posX - 50 && s.posX < player.posX + 150)
+                {
+                    // Animate slime attack
+                    slSetForeColor(1, 1, 1, 1);
+                    slSprite(attackslime[slimeCurrentFrame], s.posX, s.posY, 83, 98);
 
+                   
+                    if (slimeCurrentFrame >= attackslime.size() - 1)
+                    {
+                    
+                        slimeCurrentFrame = 0;
+                        slimeState = SlimeState::Moving;
+                    }
+                }
+                else
+                {
+                    
+                    slimeState = SlimeState::Moving;
+                }
             }
+        
 
-            // Animate slime
-            slSetForeColor(1, 1, 1, 1);
-            slSprite(walkslime[slimeCurrentFrame], s.posX, s.posY, 83, 98);
-        }
-
-        // Update slime animation frame
-        slimeAnimationDelay -= slGetDeltaTime();
-        if (slimeAnimationDelay <= 0)
-        {
-            slimeCurrentFrame = (static_cast<unsigned long long>(slimeCurrentFrame) + 1) % walkslime.size();
-            slimeAnimationDelay = 0.2;
+            // Update slime animation frame
+            slimeAnimationDelay -= slGetDeltaTime();
+            if (slimeAnimationDelay <= 0)
+            {
+                slimeCurrentFrame = (static_cast<unsigned long long>(slimeCurrentFrame) + 1) % walkslime.size();
+                slimeAnimationDelay = 0.2;
+            }
         }
 
 
-        //font 
+         
 
 
         slRender();

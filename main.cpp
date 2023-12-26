@@ -36,23 +36,36 @@ struct Player
     double isJumping;
 };
 
+struct Slime {
+    double posX;
+    double posY;
+};
+
 // sound asset
 void backGroundSound()
 {
     int bgm = slLoadWAV("D:\\sweetheart\\asset\\bgm\\rafiq.wav");
     slSoundLoop(bgm);
-}
+};
+
 
 
 int main()
 {
     slWindow(1714, 952, "sweetheart", false);
+
+    //asset sound
     backGroundSound();
+    int jump = slLoadWAV("D:\\sweetheart\\asset\\bgm\\jump2.wav");
 
     // untuk memunculkan secara random
    random_device rd;
 
-    // vector to store image IDs
+    //font 
+    int fontkecil = slLoadFont("D:\\sweetheart\\asset\\font\\sweetheart123.ttf");
+    int fontbesar = slLoadFont("D:\\sweetheart\\asset\\font\\sweetheart.ttf");
+
+    // vector to image bg,awan,ground
     vector<int> imgAll(3);
     imgAll[0] = slLoadTexture("D:\\sweetheart\\asset\\bg\\backgp.png");
     imgAll[1] = slLoadTexture("D:\\sweetheart\\asset\\bg\\ground.png");
@@ -139,6 +152,7 @@ int main()
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack\\rightattack\\attack6.png"),
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack\\rightattack\\attack7.png")
     };
+    //menyerang jurus ke dua kanan
     vector<int> attack2kanan = {
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\attack0.png"),
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\attack1.png"),
@@ -146,6 +160,7 @@ int main()
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\attack3.png"),
        
     };
+    //menyerang jurus kedua kiri
     vector<int> attack2kiri = {
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\right\\attack0.png"),
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\right\\attack1.png"),
@@ -153,8 +168,6 @@ int main()
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\attack2\\right\\attack3.png"),
        
     };
-    
-
     //Lompat Kanan
     vector<int> jumpkanan = {
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\jump\\jump0.png"),
@@ -180,6 +193,39 @@ int main()
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\jump\\rightjump\\jump7.png"),
        slLoadTexture("D:\\sweetheart\\asset\\caracter\\jump\\rightjump\\jump8.png")
     };
+
+
+    //enemy
+    //enemy slime jalan
+    vector<int> walkslime = {
+        slLoadTexture("D:\\sweetheart\\asset\\enemy\\walk\\slime0.png"),
+        slLoadTexture("D:\\sweetheart\\asset\\enemy\\walk\\slime1.png"),
+        slLoadTexture("D:\\sweetheart\\asset\\enemy\\walk\\slime2.png"),
+        slLoadTexture("D:\\sweetheart\\asset\\enemy\\walk\\slime3.png"),
+    };
+
+    //enemy slime dead
+    vector<int> deadslime = {
+       slLoadTexture("D:\\sweetheart\\asset\\enemy\\dead\\slime0.png"),
+       slLoadTexture("D:\\sweetheart\\asset\\enemy\\dead\\slime1.png"),
+       slLoadTexture("D:\\sweetheart\\asset\\enemy\\dead\\slime2.png"),
+       slLoadTexture("D:\\sweetheart\\asset\\enemy\\dead\\slime3.png"),
+    };
+    //enemy slime idle
+    vector<int> idleslime = {
+       slLoadTexture("D:\\sweetheart\\asset\\enemy\\idle\\slime-idle-0.png"),
+       slLoadTexture("D:\\sweetheart\\asset\\enemy\\idle\\slime-idle-1.png"),
+       slLoadTexture("D:\\sweetheart\\asset\\enemy\\idle\\slime-idle-2.png"),
+       slLoadTexture("D:\\sweetheart\\asset\\enemy\\idle\\slime-idle-3.png"),
+    };
+    //enmy slime attack
+    vector<int> attackslime = {
+       slLoadTexture("D:\\sweetheart\\asset\\enemy\\attack\\slime-attack-0.png"),
+       slLoadTexture("D:\\sweetheart\\asset\\enemy\\attack\\slime-attack-1.png"),
+       slLoadTexture("D:\\sweetheart\\asset\\enemy\\attack\\slime-attack-2.png"),
+       slLoadTexture("D:\\sweetheart\\asset\\enemy\\attack\\slime-attack-3.png"),
+       slLoadTexture("D:\\sweetheart\\asset\\enemy\\attack\\slime-attack-4.png"),
+    };
  
 
 
@@ -203,6 +249,10 @@ int main()
     player.gravity = -0.5; // set nilai gravitasi
     player.isJumping = false;
 
+    Slime slime;
+    slime.posX = 1500;
+    slime.posY = 180;
+
     // awan muncul 3
     vector<Cloud> cloud;
     for (int i = 0; i < 3; i++)
@@ -211,6 +261,17 @@ int main()
         double y = grnd.posY + 50 + static_cast<double>(rd() % 3) * 150 + 250;
         cloud.push_back({ x, y, 30 });
     }
+
+    vector<Slime> slimes;
+    int numSlimes = rd() % 5 + 1;
+
+    for (int i = 0; i < numSlimes; i++)
+    {
+        double x = 1500 + i * 200; 
+        double y = 200 + static_cast<double>(rd() % 3); 
+        slimes.push_back({ x, y });
+    }
+
     //jalan
     int currentFrame = 0;
 
@@ -229,7 +290,9 @@ int main()
     double attackAnimationDelay = 0.01;
     double attackAnimationTimer = 0.0;
 
-
+   //slime
+    int slimeCurrentFrame = 0;
+    double slimeAnimationDelay = 0.2;
 
     while (!slShouldClose())
     {
@@ -266,12 +329,12 @@ int main()
             player.velocityY = 0;
         }
         //batasan ground jatuh
-        player.posY = max(player.posY, 180);
+        player.posY = max(player.posY, 190);
 
         bool isMoving = slGetKey(SL_KEY_LEFT) || slGetKey(SL_KEY_RIGHT);
-        bool isJumpKey = slGetKey(' ');
+        bool isJumpKey = slGetKey(' ') || slGetKey(SL_KEY_UP);
 
-        if (isJumpKey && !player.isJumping && player.posY == 180)
+        if (isJumpKey && !player.isJumping && player.posY == 190)
         {
             //  jumping only when on the ground
             player.isJumping = true;
@@ -289,10 +352,6 @@ int main()
 
         }
 
-        
-       
-       
-       
         if (player.isJumping)
         {
             // Player is jumping
@@ -300,7 +359,6 @@ int main()
 
             // Animate jump player
             slSprite(jumpPlayerTextures[currentFrame], player.posX, player.posY, 165, 195);
-
             // Update jump animation frame
             jumpFrame += 1;
             if (jumpFrame <= jumpPlayerTextures.size())
@@ -308,12 +366,46 @@ int main()
                 // Jump animation completed, 
                 player.isJumping = false;
                 jumpFrame = 0;
+                slSoundPlay(jump);
 
             }
-                
+
 
 
         }
+       
+        else if (isMoving)
+        {
+            // Player is moving
+            if (slGetKey(SL_KEY_LEFT))
+            {
+                player.posX -= 7;
+
+
+            }
+            else if (slGetKey(SL_KEY_RIGHT))
+            {
+                player.posX += 7;
+
+            }
+
+            // untuk mengetahui gerak kanan atau kiri direction
+            const vector<int>& playerTextures = (slGetKey(SL_KEY_LEFT)) ? leftPlayer : rightPlayer;
+
+            // Animate the player
+            slSprite(playerTextures[currentFrame], player.posX, player.posY, 165, 195);
+
+            // Update animation frame
+            walkAnimationDelay -= slGetDeltaTime();
+            if (walkAnimationDelay <= 0) {
+
+                currentFrame = (currentFrame + 1) % playerTextures.size();
+                walkAnimationDelay = 0.1;
+            }
+
+        }
+       
+        
         else if (isAttacking)
         {
             const vector<int>& attackTextures = (slGetKey(SL_KEY_LEFT)) ? attackkiri : attackkanan;
@@ -364,36 +456,7 @@ int main()
             }
         }
 
-        else if (isMoving)
-        {
-            // Player is moving
-            if (slGetKey(SL_KEY_LEFT))
-            {
-                player.posX -= 7;
-               
-                
-            }
-            else if (slGetKey(SL_KEY_RIGHT))
-            {
-                player.posX += 7;
-                
-            }
-
-            // untuk mengetahui gerak kanan atau kiri direction
-            const vector<int>& playerTextures = (slGetKey(SL_KEY_LEFT)) ? leftPlayer : rightPlayer;
-
-            // Animate the player
-            slSprite(playerTextures[currentFrame], player.posX, player.posY, 165, 195);
-
-            // Update animation frame
-            walkAnimationDelay -= slGetDeltaTime();
-            if (walkAnimationDelay <= 0) {
-
-                currentFrame = (currentFrame + 1) % playerTextures.size();
-                walkAnimationDelay = 0.1;
-            }
-
-        }
+        
         
         else
         {
@@ -429,6 +492,33 @@ int main()
             slSetForeColor(1, 1, 1, 0.2);
             slSprite(imgAll[2], c.posX, c.posY, 860, 484);
         }
+        for (Slime& s : slimes)
+        {
+            s.posX -= 2;
+            if (s.posX <= -100)
+            {
+                
+                s.posX = 1800;
+                s.posY = 190 + static_cast<double>(rd() % 3);
+
+            }
+
+            // Animate slime
+            slSetForeColor(1, 1, 1, 1);
+            slSprite(walkslime[slimeCurrentFrame], s.posX, s.posY, 83, 98);
+        }
+
+        // Update slime animation frame
+        slimeAnimationDelay -= slGetDeltaTime();
+        if (slimeAnimationDelay <= 0)
+        {
+            slimeCurrentFrame = (static_cast<unsigned long long>(slimeCurrentFrame) + 1) % walkslime.size();
+            slimeAnimationDelay = 0.2;
+        }
+
+
+        //font 
+
 
         slRender();
     }

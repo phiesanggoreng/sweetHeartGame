@@ -4,6 +4,7 @@
 #include <vector>
 #include <random>
 #include <string>
+#include <chrono>
 
 using namespace std;
 
@@ -17,8 +18,8 @@ struct Cloud
 
 struct Background
 {
-    double posX1;  // initial background position
-    double posX2;  // second background position
+    double posX1; 
+    double posX2;  
     double posY;
 };
 
@@ -73,7 +74,6 @@ int main()
     random_device rd;
 
     //font 
-    int fontkecil = slLoadFont("D:\\sweetheart\\asset\\font\\sweetheart123.ttf");
     int fontbesar = slLoadFont("D:\\sweetheart\\asset\\font\\sweetheart.ttf");
 
     // vector to image bg,awan,ground
@@ -300,15 +300,22 @@ int main()
     int attackFrame = 0;
     double attackAnimationDelay = 0.01;
     double attackAnimationTimer = 0.0;
+    //deead
+    bool isPlayerDead = false;
+    int playerDeathFrame = 0;
+    double playerDeathAnimationDelay = 0.0;
+    int playerLives = 3;
 
     //slime
     int slimeCurrentFrame = 0;
     double slimeAnimationDelay = 0.2;
     double slimeAttackTimer = 4.0;
     //deadslime
-    int slimeDeathFrame = 0;
+    int slimeDeathFrame = 0.2;
     double slimeDeathAnimationDelay = 0.2;
     double slimeDeathAnimationTimer = 0.0;
+
+
 
 
 
@@ -318,6 +325,10 @@ int main()
         slSetForeColor(1, 1, 1, 1);
         slSprite(imgAll[0], bg.posX1, bg.posY, 1714, 952);
         slSprite(imgAll[0], bg.posX2, bg.posY, 1714, 952);
+
+
+
+   
 
         // Update background position
         bg.posX1 -= 0.5; // kecepatan latar belakang
@@ -370,163 +381,200 @@ int main()
             attackAnimationTimer = attackAnimationDelay;
 
         }
-
-        if (isAttacking || isAttacking2)
+        for (const Slime& s : slimes)
         {
-            // Assuming slime size is 83x98 pixels
-            double playerAttackX = player.posX + (slGetKey(SL_KEY_LEFT) ? -50 : 50);
-            double playerAttackY = player.posY;
-           
-
-            for (Slime& s : slimes)
+            if (playerLives > 0 && !isPlayerDead && player.posX < s.posX + 83 && player.posX + 50 > s.posX &&
+                player.posY < s.posY + 98 && player.posY + 195 > s.posY)
             {
-                // Check for collision between player's attack and slime
-                if (playerAttackX < s.posX + 83 && playerAttackX + 50> s.posX &&
-                    playerAttackY < s.posY + 98 && playerAttackY + 50> s.posY)
-                {
-                    
-                    s.posX = -1000; 
-                    s.posY = -1000;
-                    slSetForeColor(1, 1, 1, 1);
-                    slSprite(deadslime[slimeDeathFrame], slime.posX, slime.posY, 83, 98);
-
-                    // Update slime death animation frame and timer
-                    slimeDeathAnimationTimer -= slGetDeltaTime();
-                    if (slimeDeathAnimationTimer <= 0)
-                    {
-                        slimeDeathFrame = (slimeDeathFrame + 1) % deadslime.size();
-                        slimeDeathAnimationTimer = slimeDeathAnimationDelay;
-                    }
-
-                  
-                }
                
-       
-            }
-        }
+                playerLives--;
 
-        if (player.isJumping)
-        {
-            // Player is jumping
-            const vector<int>& jumpPlayerTextures = (slGetKey(SL_KEY_LEFT)) ? jumpkiri : jumpkanan;
-
-            // Animate jump player
-            slSprite(jumpPlayerTextures[currentFrame], player.posX, player.posY, 165, 195);
-            // Update jump animation frame
-            jumpFrame += 1;
-            if (jumpFrame <= jumpPlayerTextures.size())
-            {
-                // Jump animation completed, 
-                player.isJumping = false;
-                jumpFrame = 0;
-                slSoundPlay(jump);
-
-            }
-
-
-
-        }
-
-        else if (isMoving)
-        {
-            // Player is moving
-            if (slGetKey(SL_KEY_LEFT))
-            {
-                player.posX -= 7;
-
-
-            }
-            else if (slGetKey(SL_KEY_RIGHT))
-            {
-                player.posX += 7;
-
-            }
-
-            // untuk mengetahui gerak kanan atau kiri direction
-            const vector<int>& playerTextures = (slGetKey(SL_KEY_LEFT)) ? leftPlayer : rightPlayer;
-
-            // Animate the player
-            slSprite(playerTextures[currentFrame], player.posX, player.posY, 165, 195);
-
-            // Update animation frame
-            walkAnimationDelay -= slGetDeltaTime();
-            if (walkAnimationDelay <= 0) {
-
-                currentFrame = (currentFrame + 1) % playerTextures.size();
-                walkAnimationDelay = 0.1;
-            }
-
-        }
-
-
-        else if (isAttacking)
-        {
-            const vector<int>& attackTextures = (slGetKey(SL_KEY_LEFT)) ? attackkiri : attackkanan;
-
-            slSprite(attackTextures[attackFrame], player.posX, player.posY, 165, 195);
-
-            if (attackAnimationTimer <= 0)
-            {
-                // Update attack animation frame
-                attackFrame += 1;
-                attackAnimationTimer = attackAnimationDelay * slGetDeltaTime();
-                if (attackFrame >= attackTextures.size())
+                
+                if (playerLives == 0)
                 {
-                    isAttacking = false;
-                    attackFrame = 0;
-                }if (!player.isJumping && isJumpKey && player.posY == grnd.posY)
-                {
-                    // Player starts jumping
-                    player.isJumping = true;
-                    player.velocityY = 5.0;
+                    isPlayerDead = true;
+                    slSoundPlay(jump);  
                 }
             }
-            else
+        }if (isPlayerDead)
+        {
+            // Display dead player animation
+            slSetForeColor(1, 1, 1, 1);
+            slSprite(matikanan[playerDeathFrame], player.posX, player.posY, 165, 195);
+
+            playerDeathAnimationDelay -= slGetDeltaTime();
+
+            if (playerDeathAnimationDelay <= 0)
             {
+                playerDeathFrame = (playerDeathFrame + 1) % matikanan.size();
+                playerDeathAnimationDelay = 0.2;
 
-                attackAnimationTimer -= slGetDeltaTime();
-            }
-        }
-        else if (isAttacking2) {
-            const vector<int>& attack2Textures = (slGetKey(SL_KEY_LEFT)) ? attack2kiri : attack2kanan;
-
-            slSprite(attack2Textures[attackFrame], player.posX, player.posY, 165, 195);
-
-            if (attackAnimationTimer <= 0)
-            {
-                // Update attack animation frame
-                attackFrame += 1;
-                attackAnimationTimer = attackAnimationDelay * slGetDeltaTime();
-                if (attackFrame >= attack2Textures.size())
+                
+                if (playerLives > 0)
                 {
-                    isAttacking2 = false;
-                    attackFrame = 0;
+                    player.posX;
+                    player.posY;
+                    isPlayerDead = false;
                 }
             }
+        }
+
+
+        
+        else {
+            if (isAttacking || isAttacking2)
+            {
+                // ... (previous code)
+                double playerAttackX = player.posX + (slGetKey(SL_KEY_LEFT) ? -50 : 50);
+                double playerAttackY = player.posY;
+                // Iterate through each slime in the slimes vector
+                for (Slime& slime : slimes)
+                {
+                    // Check if the player's attack position overlaps with the current slime's position
+                    if (playerAttackX < slime.posX + 83 && playerAttackX + 50 > slime.posX &&
+                        playerAttackY < slime.posY + 98 && playerAttackY + 50 > slime.posY)
+                    {
+                        slSetForeColor(1, 1, 1, 1);
+                        slSprite(deadslime[slimeDeathFrame], slime.posX, slime.posY, 83, 98);
+
+                        slimeDeathAnimationTimer -= slGetDeltaTime() * 2;
+                        if (slimeDeathAnimationTimer <= 0)
+                        {
+                            slimeDeathFrame = (slimeDeathFrame + 1) % deadslime.size();
+                            slimeDeathAnimationTimer = slimeDeathAnimationDelay;
+                        }
+
+                        // Move the slime off-screen
+                        slime.posX = -1000;
+                        slime.posY = -1000;
+                    }
+                }
+            }
+
+            if (player.isJumping)
+            {
+                // Player is jumping
+                const vector<int>& jumpPlayerTextures = (slGetKey(SL_KEY_LEFT)) ? jumpkiri : jumpkanan;
+
+                // Animate jump player
+                slSprite(jumpPlayerTextures[currentFrame], player.posX, player.posY, 165, 195);
+                // Update jump animation frame
+                jumpFrame += 1;
+                if (jumpFrame <= jumpPlayerTextures.size())
+                {
+                    // Jump animation completed, 
+                    player.isJumping = false;
+                    jumpFrame = 0;
+                    slSoundPlay(jump);
+
+                }
+
+
+
+            }
+
+            else if (isMoving)
+            {
+                // Player is moving
+                if (slGetKey(SL_KEY_LEFT))
+                {
+                    player.posX -= 7;
+
+
+                }
+                else if (slGetKey(SL_KEY_RIGHT))
+                {
+                    player.posX += 7;
+
+                }
+
+                // untuk mengetahui gerak kanan atau kiri direction
+                const vector<int>& playerTextures = (slGetKey(SL_KEY_LEFT)) ? leftPlayer : rightPlayer;
+
+                // Animate the player
+                slSprite(playerTextures[currentFrame], player.posX, player.posY, 165, 195);
+
+                // Update animation frame
+                walkAnimationDelay -= slGetDeltaTime();
+                if (walkAnimationDelay <= 0) {
+
+                    currentFrame = (currentFrame + 1) % playerTextures.size();
+                    walkAnimationDelay = 0.1;
+                }
+
+            }
+
+
+            else if (isAttacking)
+            {
+                const vector<int>& attackTextures = (slGetKey(SL_KEY_LEFT)) ? attackkiri : attackkanan;
+
+                slSprite(attackTextures[attackFrame], player.posX, player.posY, 165, 195);
+
+                if (attackAnimationTimer <= 0)
+                {
+                    // Update attack animation frame
+                    attackFrame += 1;
+                    attackAnimationTimer = attackAnimationDelay * slGetDeltaTime();
+                    if (attackFrame >= attackTextures.size())
+                    {
+                        isAttacking = false;
+                        attackFrame = 0;
+                    }if (!player.isJumping && isJumpKey && player.posY == grnd.posY)
+                    {
+                        // Player starts jumping
+                        player.isJumping = true;
+                        player.velocityY = 5.0;
+                    }
+                }
+                else
+                {
+
+                    attackAnimationTimer -= slGetDeltaTime();
+                }
+            }
+            else if (isAttacking2) {
+                const vector<int>& attack2Textures = (slGetKey(SL_KEY_LEFT)) ? attack2kiri : attack2kanan;
+
+                slSprite(attack2Textures[attackFrame], player.posX, player.posY, 165, 195);
+
+                if (attackAnimationTimer <= 0)
+                {
+                    // Update attack animation frame
+                    attackFrame += 1;
+                    attackAnimationTimer = attackAnimationDelay * slGetDeltaTime();
+                    if (attackFrame >= attack2Textures.size())
+                    {
+                        isAttacking2 = false;
+                        attackFrame = 0;
+                    }
+                }
+                else
+                {
+                    attackAnimationTimer -= slGetDeltaTime();
+                }
+            }
+
+
+
             else
             {
-                attackAnimationTimer -= slGetDeltaTime();
+                // Player is idle
+                const vector<int>& idlePlayerTextures = (slGetKey(SL_KEY_LEFT)) ? diamKiriPlayer : diamKananPlayer;
+
+                // Animate idle player
+                slSprite(idlePlayerTextures[currentIdleFrame], player.posX, player.posY, 165, 195);
+
+                // Update idle animation frame dengan delay
+                idleAnimationDelay -= slGetDeltaTime();
+                if (idleAnimationDelay <= 0)
+                {
+                    currentIdleFrame = (currentIdleFrame + 1) % idlePlayerTextures.size();
+                    idleAnimationDelay = 0.1; //  delay
+                }
             }
         }
-
-
-
-        else
-        {
-            // Player is idle
-            const vector<int>& idlePlayerTextures = (slGetKey(SL_KEY_LEFT)) ? diamKiriPlayer : diamKananPlayer;
-
-            // Animate idle player
-            slSprite(idlePlayerTextures[currentIdleFrame], player.posX, player.posY, 165, 195);
-
-            // Update idle animation frame dengan delay
-            idleAnimationDelay -= slGetDeltaTime();
-            if (idleAnimationDelay <= 0)
-            {
-                currentIdleFrame = (currentIdleFrame + 1) % idlePlayerTextures.size();
-                idleAnimationDelay = 0.1; //  delay
-            }
-        }
+        
 
 
 
@@ -554,7 +602,7 @@ int main()
         {
             // Slime is attacking
             slimeState = SlimeState::Attacking;
-            slimeAttackTimer = 1; // Reset the timer for the next attack
+            slimeAttackTimer = 0; // Reset the timer for the next attack
         }
 
         for (Slime& s : slimes)

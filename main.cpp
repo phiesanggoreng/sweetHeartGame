@@ -75,6 +75,7 @@ int main()
 
     //font 
     int fontbesar = slLoadFont("D:\\sweetheart\\asset\\font\\sweetheart.ttf");
+    slSetFont(slLoadFont("D:\\sweetheart\\asset\\font\\sweetheart.ttf"), 70);
 
     // vector to image bg,awan,ground
     vector<int> imgAll(3);
@@ -416,6 +417,7 @@ int main()
                     player.posY;
                     isPlayerDead = false;
                 }
+               
             }
         }
 
@@ -673,7 +675,7 @@ int main()
 
 
          
-
+        slText(800, 600, "sweetheart");
 
         slRender();
     }

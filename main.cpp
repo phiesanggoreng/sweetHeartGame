@@ -373,7 +373,7 @@ int main()
         {
             //  jumping only when on the ground
             player.isJumping = true;
-            player.velocityY = 10.0;
+            player.velocityY = 15.0;
         }
 
         if (slGetKey('Q'))
@@ -696,38 +696,56 @@ int main()
         if (playerLives <= 0 && !isGameOver)
         {
             isGameOver = true;
-            gameOverTimer = 2.0; // Set the timer for displaying the game over screen
-
-            // Reset the score to 0 when the game is over
-            playerScore = 0;
+            gameOverTimer = 2.0;
+            
         }
 
+        if (playerLives <= 0 && !isGameOver)
+        {
+            isGameOver = true;
+            gameOverTimer = 2.0; // Set the timer for displaying the game over screen
+            slSoundPlay(dead); 
+           
+          
+        }
+        if (!isGameOver) {
+       
+            slSetFontSize(50);
+            slSetForeColor(1, 1, 1, 1);
+            slSetTextAlign(SL_ALIGN_LEFT);
+            slText(0, 400, ("Score: " + to_string(playerScore)).c_str());
+        
+        }
         if (isGameOver)
         {
             slSetTextAlign(SL_ALIGN_CENTER);
-            slSetFontSize(100);
-            slSetForeColor(1, 1, 0, 1);
-            slText(768, 480, "Game Over");
-
+            slSetFontSize(70);
+            slSetForeColor(1, 1, 1, 1);
+            slText(657, 480, "Game Over");
+           
             slSetTextAlign(SL_ALIGN_LEFT);
             gameOverTimer -= slGetDeltaTime();
 
             if (gameOverTimer <= 0)
             {
-                
-                isGameOver = false;
-                playerLives = 3;
-                player.posX = 50;
-                player.posY = 860;
-                playerScore = 0; 
+                slSetFontSize(50);
+                slSetTextAlign(SL_ALIGN_CENTER);
+                slText(657, 400, ("Score: " + to_string(playerScore)).c_str());
+                slSetTextAlign(SL_ALIGN_CENTER);
+                slText(657, 300, "Press ENTER key to continue...");
+
+                if (slGetKey(SL_KEY_ENTER))
+                {
+                    isGameOver = false;
+                    playerLives = 3;
+                    player.posX = 50;
+                    player.posY = 860;
+                    playerScore = 0;
+                }
             }
         }
 
-        slSetTextAlign(SL_ALIGN_LEFT);
-        slSetFontSize(50);
-        slSetForeColor(1, 1, 1, 1);
-        slText(900, 400, to_string(playerScore).c_str());
-        
+      
 
         slRender();
     }

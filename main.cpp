@@ -1,7 +1,6 @@
 #include <sl.h>
 #include <iostream>
 #include <Windows.h>
-#include "game.cpp"
 #include <vector>
 #include <random>
 #include <string>
@@ -19,8 +18,8 @@ struct Cloud
 
 struct Background
 {
-    double posX1; 
-    double posX2;  
+    double posX1;
+    double posX2;
     double posY;
 };
 
@@ -55,7 +54,7 @@ enum class SlimeState
 {
     Moving,
     Attacking,
-    
+
 };
 
 SlimeState slimeState = SlimeState::Moving;
@@ -79,7 +78,7 @@ int main()
     random_device rd;
 
     //font 
-   
+
     int fontkecil = slLoadFont("D:\\sweetheart\\asset\\font\\sweetheart123.ttf");
     slSetFont(slLoadFont("D:\\sweetheart\\asset\\font\\sweetheart123.ttf"), 70);
     // vector to image bg,awan,ground
@@ -337,7 +336,7 @@ int main()
 
 
 
-   
+
 
         // Update background position
         bg.posX1 -= 0.5; // kecepatan latar belakang
@@ -383,7 +382,7 @@ int main()
         {
             isAttacking = true;
             attackAnimationTimer = attackAnimationDelay;
-           
+
         }
         else if (slGetKey('W'))
         {
@@ -397,23 +396,23 @@ int main()
                 player.posY < s.posY + 98 && player.posY + 195 > s.posY)
             {
                 playerLives--;
-               
 
-               
-                
+
+
+
                 if (playerLives == 0)
                 {
                     isPlayerDead = true;
-                    
+
                     slSoundPlay(deadfamale);
-                    
+
 
                 }
-                
 
-               
+
+
             }
-           
+
         }if (isPlayerDead)
         {
             // Display dead player animation
@@ -426,26 +425,26 @@ int main()
             {
                 playerDeathFrame = (playerDeathFrame + 1) % matikanan.size();
                 playerDeathAnimationDelay = 0.2;
-                
 
-                
+
+
                 if (playerLives > 0)
                 {
                     player.posX;
                     player.posY;
-                    
+
                     isPlayerDead = false;
 
                 }
 
-               
+
             }
         }
 
 
 
 
-        
+
         else {
             if (isAttacking || isAttacking2)
             {
@@ -474,9 +473,9 @@ int main()
                         // Move the slime off-screen
                         slime.posX = -1000;
                         slime.posY = -1000;
-                        
+
                     }
-                    
+
 
                 }
             }
@@ -540,7 +539,7 @@ int main()
                 const vector<int>& attackTextures = (slGetKey(SL_KEY_LEFT)) ? attackkiri : attackkanan;
 
                 slSprite(attackTextures[attackFrame], player.posX, player.posY, 165, 195);
-                
+
 
                 if (attackAnimationTimer <= 0)
                 {
@@ -564,7 +563,7 @@ int main()
 
                     attackAnimationTimer -= slGetDeltaTime();
                 }
-               
+
             }
             else if (isAttacking2) {
                 const vector<int>& attack2Textures = (slGetKey(SL_KEY_LEFT)) ? attack2kiri : attack2kanan;
@@ -608,7 +607,7 @@ int main()
                 }
             }
         }
-        
+
 
 
 
@@ -636,34 +635,34 @@ int main()
         {
             // Slime is attacking
             slimeState = SlimeState::Attacking;
-            slimeAttackTimer = 0; 
+            slimeAttackTimer = 0;
         }
-      
+
         for (Slime& s : slimes)
         {
             s.posX -= 4;
             if (slimeState == SlimeState::Moving)
             {
-                
-                
+
+
                 if (s.posX <= -100)
                 {
                     s.posX = 1800;
                     s.posY = 190 + static_cast<double>(rd() % 3);
                 }
 
-     
+
                 if (s.posX > player.posX - 50 && s.posX < player.posX + 100)
                 {
-                 
+
                     slSetForeColor(1, 1, 1, 1);
                     slSprite(idleslime[slimeCurrentFrame], s.posX, s.posY, 83, 98);
 
-                 
+
                     if (s.posX + 41 > player.posX - 50 && s.posX + 41 < player.posX + 150)
                     {
-                        
-                        s.posX += 3;  
+
+                        s.posX += 3;
                     }
                 }
                 else
@@ -675,29 +674,29 @@ int main()
             }
             else if (slimeState == SlimeState::Attacking)
             {
-                
+
                 if (s.posX > player.posX - 50 && s.posX < player.posX + 120)
                 {
                     // Animate slime attack
                     slSetForeColor(1, 1, 1, 1);
                     slSprite(attackslime[slimeCurrentFrame], s.posX, s.posY, 83, 98);
 
-                   
+
                     if (slimeCurrentFrame >= attackslime.size() - 1)
                     {
-                    
+
                         slimeCurrentFrame = 0;
                         slimeState = SlimeState::Moving;
                     }
                 }
                 else
                 {
-                    
+
                     slimeState = SlimeState::Moving;
                 }
-               
+
             }
-        
+
 
             // Update slime animation frame
             slimeAnimationDelay -= slGetDeltaTime();
@@ -711,25 +710,25 @@ int main()
         {
             isGameOver = true;
             gameOverTimer = 2.0;
-            
+
         }
 
         if (playerLives <= 0 && !isGameOver)
         {
             isGameOver = true;
             gameOverTimer = 2.0;
-            
-           
-           
-          
+
+
+
+
         }
         if (!isGameOver) {
-       
+
             slSetFontSize(50);
-            slSetForeColor(0, 0,0, 1);
+            slSetForeColor(0, 0, 0, 1);
             slSetTextAlign(SL_ALIGN_LEFT);
             slText(0, 400, ("Score: " + to_string(playerScore)).c_str());
-        
+
         }
         if (isGameOver)
         {
@@ -737,8 +736,8 @@ int main()
             slSetFontSize(70);
             slSetForeColor(0, 0, 0, 1);
             fontkecil;
-            slText(657, 480, "Game Over");
-           
+            slText(657, 600, "Game Over");
+
             slSetTextAlign(SL_ALIGN_LEFT);
             gameOverTimer -= slGetDeltaTime();
 
@@ -746,9 +745,15 @@ int main()
             {
                 slSetFontSize(50);
                 slSetTextAlign(SL_ALIGN_CENTER);
-                slText(657, 400, ("Score: " + to_string(playerScore)).c_str());
+                slText(657, 500, ("Score: " + to_string(playerScore)).c_str());
                 slSetTextAlign(SL_ALIGN_CENTER);
-                slText(657, 300, "Press ENTER key to continue...");
+                slText(657, 400, "Press ENTER key to continue...");
+                slText(657, 300, "Press Q key to quit game...");
+
+                if (slGetKey('Q'))
+                {
+                    slClose();
+                }
 
                 if (slGetKey(SL_KEY_ENTER))
                 {
@@ -759,9 +764,9 @@ int main()
                     playerScore = 0;
                 }
             }
+            
         }
-
-      
+        
 
         slRender();
     }

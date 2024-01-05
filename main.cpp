@@ -1,6 +1,7 @@
 #include <sl.h>
 #include <iostream>
 #include <Windows.h>
+#include "game.cpp"
 #include <vector>
 #include <random>
 #include <string>
@@ -46,7 +47,7 @@ struct Slime {
 // sound asset
 void backGroundSound()
 {
-    int bgm = slLoadWAV("D:\\sweetheart\\asset\\bgm\\rafiq.wav");
+    int bgm = slLoadWAV("D:\\sweetheart\\asset\\bgm\\battle.wav");
     slSoundLoop(bgm);
 };
 
@@ -70,15 +71,17 @@ int main()
     backGroundSound();
     int jump = slLoadWAV("D:\\sweetheart\\asset\\bgm\\jump2.wav");
     int dead = slLoadWAV("D:\\sweetheart\\asset\\bgm\\end.wav");
-    
+    int sword1 = slLoadWAV("D:\\sweetheart\\asset\\bgm\\sword.wav");
+    int sword2 = slLoadWAV("D:\\sweetheart\\asset\\bgm\\slash.wav");
+    int deadfamale = slLoadWAV("D:\\sweetheart\\asset\\bgm\\deadfamale.wav");
 
     // untuk memunculkan secara random
     random_device rd;
 
     //font 
-    int fontbesar = slLoadFont("D:\\sweetheart\\asset\\font\\sweetheart.ttf");
-    slSetFont(slLoadFont("D:\\sweetheart\\asset\\font\\sweetheart.ttf"), 70);
-
+   
+    int fontkecil = slLoadFont("D:\\sweetheart\\asset\\font\\sweetheart123.ttf");
+    slSetFont(slLoadFont("D:\\sweetheart\\asset\\font\\sweetheart123.ttf"), 70);
     // vector to image bg,awan,ground
     vector<int> imgAll(3);
     imgAll[0] = slLoadTexture("D:\\sweetheart\\asset\\bg\\backgp.png");
@@ -134,7 +137,7 @@ int main()
         slLoadTexture("D:\\sweetheart\\asset\\caracter\\ded\\ded1.png"),
         slLoadTexture("D:\\sweetheart\\asset\\caracter\\ded\\ded2.png"),
         slLoadTexture("D:\\sweetheart\\asset\\caracter\\ded\\ded3.png"),
-        slLoadTexture("D:\\sweetheart\\asset\\caracter\\ded\\ded4.png")////
+        slLoadTexture("D:\\sweetheart\\asset\\caracter\\ded\\ded4.png")
     };
 
     //Mati Kiri
@@ -142,7 +145,7 @@ int main()
         slLoadTexture("D:\\sweetheart\\asset\\caracter\\ded\\dedright\\ded1.png"),
         slLoadTexture("D:\\sweetheart\\asset\\caracter\\ded\\dedright\\ded2.png"),
         slLoadTexture("D:\\sweetheart\\asset\\caracter\\ded\\dedright\\ded3.png"),
-        slLoadTexture("D:\\sweetheart\\asset\\caracter\\ded\\dedright\\ded4.png")////
+        slLoadTexture("D:\\sweetheart\\asset\\caracter\\ded\\dedright\\ded4.png")
     };
 
     //Mennyerang 1 Kanan
@@ -380,6 +383,7 @@ int main()
         {
             isAttacking = true;
             attackAnimationTimer = attackAnimationDelay;
+           
         }
         else if (slGetKey('W'))
         {
@@ -400,7 +404,9 @@ int main()
                 if (playerLives == 0)
                 {
                     isPlayerDead = true;
-                    slSoundPlay(dead); 
+                    
+                    slSoundPlay(deadfamale);
+                    
 
                 }
                 
@@ -420,13 +426,16 @@ int main()
             {
                 playerDeathFrame = (playerDeathFrame + 1) % matikanan.size();
                 playerDeathAnimationDelay = 0.2;
+                
 
                 
                 if (playerLives > 0)
                 {
                     player.posX;
                     player.posY;
+                    
                     isPlayerDead = false;
+
                 }
 
                
@@ -542,6 +551,7 @@ int main()
                     {
                         isAttacking = false;
                         attackFrame = 0;
+                        slSoundPlay(sword1);
                     }if (!player.isJumping && isJumpKey && player.posY == grnd.posY)
                     {
                         // Player starts jumping
@@ -570,6 +580,7 @@ int main()
                     {
                         isAttacking2 = false;
                         attackFrame = 0;
+                        slSoundPlay(sword2);
                     }
                 }
                 else
@@ -625,15 +636,16 @@ int main()
         {
             // Slime is attacking
             slimeState = SlimeState::Attacking;
-            slimeAttackTimer = 0; // Reset the timer for the next attack
+            slimeAttackTimer = 0; 
         }
-
+      
         for (Slime& s : slimes)
         {
+            s.posX -= 4;
             if (slimeState == SlimeState::Moving)
             {
                 
-                s.posX -= 2;
+                
                 if (s.posX <= -100)
                 {
                     s.posX = 1800;
@@ -650,7 +662,8 @@ int main()
                  
                     if (s.posX + 41 > player.posX - 50 && s.posX + 41 < player.posX + 150)
                     {
-                        s.posX += 2;  
+                        
+                        s.posX += 3;  
                     }
                 }
                 else
@@ -663,7 +676,7 @@ int main()
             else if (slimeState == SlimeState::Attacking)
             {
                 
-                if (s.posX > player.posX - 50 && s.posX < player.posX + 150)
+                if (s.posX > player.posX - 50 && s.posX < player.posX + 120)
                 {
                     // Animate slime attack
                     slSetForeColor(1, 1, 1, 1);
@@ -682,6 +695,7 @@ int main()
                     
                     slimeState = SlimeState::Moving;
                 }
+               
             }
         
 
@@ -703,15 +717,16 @@ int main()
         if (playerLives <= 0 && !isGameOver)
         {
             isGameOver = true;
-            gameOverTimer = 2.0; // Set the timer for displaying the game over screen
-            slSoundPlay(dead); 
+            gameOverTimer = 2.0;
+            
+           
            
           
         }
         if (!isGameOver) {
        
             slSetFontSize(50);
-            slSetForeColor(1, 1, 1, 1);
+            slSetForeColor(0, 0,0, 1);
             slSetTextAlign(SL_ALIGN_LEFT);
             slText(0, 400, ("Score: " + to_string(playerScore)).c_str());
         
@@ -720,7 +735,8 @@ int main()
         {
             slSetTextAlign(SL_ALIGN_CENTER);
             slSetFontSize(70);
-            slSetForeColor(1, 1, 1, 1);
+            slSetForeColor(0, 0, 0, 1);
+            fontkecil;
             slText(657, 480, "Game Over");
            
             slSetTextAlign(SL_ALIGN_LEFT);

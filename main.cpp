@@ -5,6 +5,7 @@
 #include <random>
 #include <string>
 
+
 using namespace std;
 
 struct Button {
@@ -45,21 +46,12 @@ struct Slime {
 };
 
 // sound asset
-void backGroundSound()
-{
-
-    int lagu = slLoadWAV("D:\\sweetheart\\asset\\bgm\\boa.wav");
-    slSoundLoop(lagu);
-}; void ingame()
+ void ingame()
 {
 
     int bgm = slLoadWAV("D:\\sweetheart\\asset\\bgm\\battle.wav");
     slSoundLoop(bgm);
 };
-
-
-
-
 
 enum class SlimeState
 {
@@ -72,6 +64,7 @@ SlimeState slimeState = SlimeState::Moving;
 
 enum MenuState
 {
+
     MAIN_MENU,
     PLAY_MENU,
     ABOUT_MENU
@@ -84,54 +77,94 @@ void judul()
     static int animationCounter = 0;
     int y = 600 + 10 * sin(animationCounter * 0.1);
 
-
-    slText(350, y, "SWEET HEART");
+    
+    slText(400, y, "SWEET HEART");
 
     animationCounter++;
 
 }
 
+void displayLoadingRotate1(int x, int y, int radius, int loadingAnimationCounter, const char* loadingText)
+{
+    slSetForeColor(1, 1, 1, 1);
 
+    // Draw the rotating loading circle
+    slPush();
+    slTranslate(x+45, y+125);
+    slRotate(loadingAnimationCounter);  // Rotate based on the loading animation counter
+    slSemiCircleFill(10, 10, radius, 1, 20.0);
+    slPop();
 
+    // Display loading text
+    slText(x - 100, y - 10, loadingText);
+}
 
+void displayLoadingRotate2(int x, int y, int radius, int loadingAnimationCounter2, const char* loadingText)
+{
+    slSetForeColor(1, 1, 1, 1);
+
+    // Draw the rotating loading circle
+    slPush();
+    slTranslate(x + 45, y + 125);
+    slRotate(loadingAnimationCounter2);  // Rotate based on the loading animation counter
+    slSemiCircleFill(10, 10, radius, 1, 30.0);
+    slPop();
+
+    // Display loading text
+    slText(x - 100, y - 10, loadingText);
+}
+
+void displayLoadingRotate3(int x, int y, int radius, int loadingAnimationCounter3, const char* loadingText)
+{
+    slSetForeColor(1, 1, 1, 1);
+
+    // Draw the rotating loading circle
+    slPush();
+    slTranslate(x + 45, y + 125);
+    slRotate(loadingAnimationCounter3);  // Rotate based on the loading animation counter
+    slSemiCircleFill(10, 10, radius, 1, 50.0);
+    slPop();
+
+    // Display loading text
+    slText(x - 100, y - 10, loadingText);
+}
 
 void displayMenu()
 {
     //letak tulisan
 
 
-
-    slText(590, 480, "PLAY");
-    slText(540, 380, "CREDIT");
-    slText(590, 280, "EXIT");
+ 
+    slText(580, 480, "PLAY");
+    slText(580, 380, "CREDIT");
+    slText(580, 280, "EXIT");
 
 }
 
-//tampilan about
+//tampilan credits
 void animateText()
 {
     static int animationCounter = 0;
     int y = 380 + 10 *
         sin(animationCounter * 0.1);
 
-    slText(490, 380 + 10 *
+   
+    slText(550, 430 + 10 *
         sin(animationCounter * 0.1), "Danni");
-    slText(490, 480 + 10 *
+    slText(550, 530 + 10 *
         sin(animationCounter * 0.1), "Rafiq");
-    slText(490, 580 + 10 *
+    slText(550, 630 + 10 *
         sin(animationCounter * 0.1), "Radinal");
-    slText(490, 280 + 10 *
+    slText(550, 330 + 10 *
         sin(animationCounter * 0.1), "Nibras");
 
-    slText(290, 180 + 10 *
-        sin(animationCounter * 0.1), "press Q to menu");
+    slText(430, 180, "press Q to menu");
 
 
     animationCounter++;
 
 
 }
-
 
 int getUserInput(const Button& playButton, const Button& aboutButton, const Button& exitButton) {
     int choice = 0;
@@ -162,32 +195,30 @@ bool isInGame = false;
 bool isInCredit = false;
 int main()
 {
-
     slWindow(1714, 952, "Sweetheart", false);
-    if (currentMenu == MAIN_MENU) {
-
-        backGroundSound();
-    }
-    else
-    {
-        slSoundPause;
-    }
-
 
     int bg = slLoadTexture("D:\\sweetheart\\asset\\bg\\backgp.png");
     int cursor = slLoadTexture("D:\\sweetheart\\asset\\bg\\cursor.png");
-    int font = slLoadFont("D:\\sweetheart\\asset\\font\\sweetheart123.ttf");
+    int font = slLoadFont("D:\\sweetheart\\asset\\font\\Minecraft.ttf");
+    int lagu = slLoadWAV("D:\\sweetheart\\asset\\bgm\\boa.wav");
 
-    slSetFont(font, 100);
-
+    //sound bg
+    slSoundLoop(lagu);
+    if (currentMenu == PLAY_MENU) 
+    {
+        // Stop the background sound and start playing ingame sound only once
+        slSoundStop(lagu);
+    }
 
 
     //button click areanya
-    Button playButton{ 590, 480, 160, 60 };
-    Button aboutButton{ 540, 380, 200, 60 };
-    Button exitButton{ 590, 280, 140, 60 };
+    Button playButton{ 580, 480, 160, 60 };
+    Button aboutButton{ 580, 380, 200, 60 };
+    Button exitButton{ 580, 280, 140, 60 };
     //loading
-    int loadingAnimationCounter = 0;
+    int loadingAnimationCounter = 120;
+    int loadingAnimationCounter2 = 240;
+    int loadingAnimationCounter3 = 360;
     const char* loadingText = "Loading....";
 
 
@@ -200,12 +231,19 @@ int main()
         if (currentMenu == MAIN_MENU)
         {
             isInGame = false;
+            
+
+            slSetFont(font, 100);
             judul();
+            
+            slSetFont(font, 70);
             displayMenu();
         }
         else if (currentMenu == ABOUT_MENU)
         {
             isInGame = false;
+
+          
             animateText();
             if (slGetKey('Q'))
             {
@@ -217,32 +255,35 @@ int main()
 
         else if (currentMenu == PLAY_MENU)
         {
-            isInGame = true;
-            int loadingX = 630;
-            int loadingY = 500;
-            int loadingRadius = 50;
+            if (!isInGame) 
+            {
+                // Stop the background sound and start playing ingame sound only once
+                slSoundStop(lagu);
+                
+                isInGame = true;
+            }
 
-
-            slSetForeColor(1, 1, 1, 1);
-            slCircleFill(loadingX, loadingY, loadingRadius, 1);
-
+            //loading1
+            slSetFont(font, 80);
+            displayLoadingRotate1(650, 400, 55, loadingAnimationCounter, loadingText);
+            displayLoadingRotate2(650, 400, 55, loadingAnimationCounter2, loadingText);
+            displayLoadingRotate3(650, 400, 55, loadingAnimationCounter3, loadingText);
+            // Increase loading animation counter
+            loadingAnimationCounter += 2;  // Adjust the increment value for the desired rotation speed
+            loadingAnimationCounter2 += 2;
+            loadingAnimationCounter3 += 2;
+            
             if (slGetKey('Q'))
             {
                 currentMenu = MAIN_MENU;
                 isInGame = false;
             }
+            
+            
 
-            //posisi loading
-            int textX = loadingX - slGetTextWidth(loadingText) / 2;
-            int textY = loadingY - loadingRadius - 60;
-
-            //display
-            slText(textX, textY, loadingText);
-
-            loadingAnimationCounter++;
 
             //jeda waktu sebelum game
-            if (loadingAnimationCounter > 100)
+            if (loadingAnimationCounter > 300)
             {
                 ingame();
                 //add code game
@@ -907,7 +948,7 @@ int main()
                         slSetFontSize(50);
                         slSetForeColor(1, 1, 1, 1);
                         slSetTextAlign(SL_ALIGN_LEFT);
-                        slText(0, 400, ("Score: " + to_string(playerScore)).c_str());
+                        slText(0, 550, ("Score: " + to_string(playerScore)).c_str());
 
                     }
                     if (isGameOver)
@@ -916,7 +957,7 @@ int main()
                         slSetFontSize(70);
                         slSetForeColor(0, 0, 0, 1);
                         fontkecil;
-                        slText(657, 600, "Game Over");
+                        slText(800, 600, "Game Over");
 
                         slSetTextAlign(SL_ALIGN_LEFT);
                         gameOverTimer -= slGetDeltaTime();
@@ -926,10 +967,10 @@ int main()
                             slSetFontSize(50);
                             slSetForeColor(1, 1, 1, 1);
                             slSetTextAlign(SL_ALIGN_CENTER);
-                            slText(657, 500, ("Score: " + to_string(playerScore)).c_str());
+                            slText(800, 500, ("Score: " + to_string(playerScore)).c_str());
                             slSetTextAlign(SL_ALIGN_CENTER);
-                            slText(657, 400, "Press ENTER key to continue...");
-                            slText(657, 300, "Press Q key to quit game...");
+                            slText(800, 400, "Press ENTER key to continue...");
+                            slText(800, 300, "Press Q key to quit game...");
 
                             if (slGetKey('Q'))
                             {

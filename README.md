@@ -1,6 +1,6 @@
 <div align="center">
   <h1>SweetHeart</h1>
-  <p><b>Project akhir semester 1 dari Kelompok 5</b></p>
+  <p><b>Final Project Semester 1 Dari Kelompok 5</b></p>
   <p>23.11.5861 Nibras Ahmad Badruzzaman</p> 
   <p>23.11.5815 Radinal Aly</p>
   <p>23.11.5869 Rafiq Annahari</p>
